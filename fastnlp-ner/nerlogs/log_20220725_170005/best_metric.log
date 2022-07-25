@@ -1,0 +1,12 @@
+{"metric": {"span": {"f": 0.92139, "pre": 0.925526, "rec": 0.917291}, "acc_span": {"acc": 0.992024}, "step": 1179, "epoch": 1}}
+{"metric": {"data_train": {"span": {"f": 0.90949, "pre": 0.91974, "rec": 0.899466}, "acc_span": {"acc": 0.994779}}}}
+{"metric": {"span": {"f": 0.94909, "pre": 0.937832, "rec": 0.960623}, "acc_span": {"acc": 0.994216}, "step": 2358, "epoch": 1}}
+{"metric": {"data_train": {"span": {"f": 0.929508, "pre": 0.91275, "rec": 0.946894}, "acc_span": {"acc": 0.996017}}}}
+{"metric": {"span": {"f": 0.962024, "pre": 0.95786, "rec": 0.966225}, "acc_span": {"acc": 0.99546}, "step": 4716, "epoch": 1}}
+{"metric": {"data_train": {"span": {"f": 0.971353, "pre": 0.963218, "rec": 0.979626}, "acc_span": {"acc": 0.998095}}}}
+{"metric": {"span": {"f": 0.963639, "pre": 0.962294, "rec": 0.964989}, "acc_span": {"acc": 0.995822}, "step": 7074, "epoch": 2}}
+{"metric": {"data_train": {"span": {"f": 0.976226, "pre": 0.971864, "rec": 0.980628}, "acc_span": {"acc": 0.998573}}}}
+{"metric": {"span": {"f": 0.964324, "pre": 0.960072, "rec": 0.968614}, "acc_span": {"acc": 0.995685}, "step": 8253, "epoch": 2}}
+{"metric": {"data_train": {"span": {"f": 0.983475, "pre": 0.982983, "rec": 0.983968}, "acc_span": {"acc": 0.998986}}}}
+{"metric": {"span": {"f": 0.966917, "pre": 0.96238, "rec": 0.971497}, "acc_span": {"acc": 0.99592}, "step": 9432, "epoch": 2}}
+{"metric": {"data_train": {"span": {"f": 0.989687, "pre": 0.985752, "rec": 0.993654}, "acc_span": {"acc": 0.999305}}}}
