@@ -31,34 +31,13 @@
 [unused1] 0
 
 
-# NER for MarkBERT-postag
 
-振 O
-兴 O
-[unused6] O
-中 B-NS
-华 E-NS
-[unused19] O
-而 O
-MSP O
-努 O
-力 O
-[unused12] O
-奋 O
-斗 O
-[unused6] O
-
-
-# TNEWS for MarkBERT
+# TNEWS for BERT
 
  {"label": "102", "label_des": "news_entertainment", "sentence": "江疏影甜甜圈自拍，迷之角度竟这么好看，美吸引一切事物"}
 
 
 # TNEWS for MarkBERT
 
- {"label": "102", "label_des": "news_entertainment", "sentence": "江疏影 甜甜圈 自拍 ，迷之 角度 竟 这么 好看 ，美 吸引 一切 事物 "}
+ {"label": "102", "label_des": "news_entertainment", "sentence": "江疏影 [unused1] 甜甜圈 [unused1] 自拍 [unused1] ，[unused1] 迷之 [unused1] 角度 [unused1] 竟 [unused1] 这么 [unused1] 好看 [unused1] ，[unused1] 美 [unused1] 吸引 [unused1] 一切 [unused1] 事物 [unused1]"}
 
-
- # TNEWS for MarkBERT-postag
-
- {"label": "102", "label_des": "news_entertainment", "sentence": "江疏影 nr 甜甜圈 vv 自拍 nn ，pu 迷 NN 之 deg 角度 nn 竟 ad 这么 ad 好看 va ，pu 美 nr 吸引 vv 一切 dt 事物 nn"}

@@ -5,11 +5,12 @@
 # @File    : run_ner_flag
 from fastNLP.modules import ConditionalRandomField
 from transformers import BertModel, BertTokenizer, BertConfig
-
+from tqdm import tqdm
 import sys
 from load_data import load_ontonotes_cn
 import torch
-from fastNLP import Vocabulary, Trainer
+import torch.nn as nn
+from fastNLP import Vocabulary, Trainer, Tester
 from fastNLP import LossInForward
 from fastNLP import BucketSampler
 from fastNLP import FitlogCallback, EarlyStopCallback
@@ -17,23 +18,20 @@ import fitlog
 from fastNLP import AccuracyMetric, SpanFPreRecMetric
 from utils import Unfreeze_Callback
 import os
+import time
 if not os.path.exists('./nerlogs'):
     os.makedirs('./nerlogs')
-if not os.path.exists('../ontonotes_mark/'):
-    os.makedirs('../ontonotes_mark/')
-if not os.path.exists('../msra_mark/'):
-    os.makedirs('../msra_mark/')
 
 fitlog.set_log_dir('./nerlogs')
-ontonote4ner_cn_path = '../ontonotes_mark/'
-msra_ner_cn_path = '../msra-mark/'
+
+
 import argparse
 import torch.optim as optim
 
 from fastNLP import WarmupCallback
 from transformers import AdamW
 import math
-
+import inspect
 
 class MyWarmupCallback(WarmupCallback):
 
@@ -66,6 +64,9 @@ class MyWarmupCallback(WarmupCallback):
 
 
 parser = argparse.ArgumentParser()
+
+parser.add_argument('--msra_path', default='../msra-mark/')
+parser.add_argument('--ontonotes_path', default='../ontonotes-mark/')
 
 parser.add_argument('--device', default=0, )
 parser.add_argument('--demo', type=int, default=0)
@@ -120,6 +121,8 @@ parser.add_argument('--gradient_clip_norm_other', type=float, default=5)  # engl
 
 args = parser.parse_args()
 
+
+
 if args.fix_ptm_epoch > 0 and args.fix_ptm_step > 0:
     print('only fix one, epoch or step! exit!')
     exit(1)
@@ -172,23 +175,19 @@ from transformers import AutoModel, AutoConfig, DistilBertModel, DistilBertConfi
 bert_config = BertConfig.from_pretrained(args.ptm_name)
 bert_model = BertModel.from_pretrained(args.ptm_path, config=bert_config)
 
-print(bert_config)
+# print(bert_config)
 model_type = bert_config.model_type
-print(bert_model)
+# print(bert_model)
 
 refresh_data = False
 
-cache_name = 'cache/{}_{}_{}'.format(args.dataset, args.encoding_type, model_type)
-print('cache_name', cache_name)
-
 if args.dataset == 'ontonotes':
     raise NotImplementedError
-    bundle = load_ontonotes(ontonotes_path, args.encoding_type, _cache_fp=cache_name)
 elif args.dataset == 'ontonotes_cn':
-    bundle = load_ontonotes_cn(ontonote4ner_cn_path, args.encoding_type, pretrained_model_name_or_path=args.ptm_name,
+    bundle = load_ontonotes_cn(args.ontonotes_path, args.encoding_type, pretrained_model_name_or_path=args.ptm_name,
                                dataset_name=args.dataset)
 elif args.dataset == 'msra_ner':
-    bundle = load_ontonotes_cn(msra_ner_cn_path, args.encoding_type, pretrained_model_name_or_path=args.ptm_name,
+    bundle = load_ontonotes_cn(args.msra_path, args.encoding_type, pretrained_model_name_or_path=args.ptm_name,
                                dataset_name=args.dataset)
 else:
     print('不支持该数据集')
@@ -198,6 +197,8 @@ for k, v in bundle.datasets.items():
     v.set_pad_val('words', bundle.vocabs['words'].padding_idx)
 
 args.num_labels = len(bundle.get_vocab('target'))
+print(bundle.get_vocab('target'), args.num_labels)
+
 model = BertNER(bert_model, bert_config, args)
 print('*' * 20, 'param not ptm', '*' * 20)
 for k, v in model.named_parameters():
@@ -290,13 +291,10 @@ if args.early_stop_patience > 0:
     callbacks.append(EarlyStopCallback(args.early_stop_patience))
 
 metrics = []
-# acc_metric = AccuracyMetric(pred='pred',target='target')
-# acc_metric.set_metric_name('acc')
-english_pos_dataset = ['ritter_pos', 'ark_twitter_pos']
-if args.dataset not in english_pos_dataset:
-    f_metric = SpanFPreRecMetric(bundle.vocabs['target'], 'pred', 'target', encoding_type=args.encoding_type)
-    f_metric.set_metric_name('span')
-    metrics.append(f_metric)
+
+f_metric = SpanFPreRecMetric(bundle.vocabs['target'], 'pred', 'target', encoding_type=args.encoding_type)
+f_metric.set_metric_name('span')
+metrics.append(f_metric)
 acc_metric = AccuracyMetric(pred='pred', target='target')
 acc_metric.set_metric_name('acc_span')
 metrics.append(acc_metric)
@@ -324,13 +322,13 @@ for k, v in bundle.datasets.items():
 
     v.set_target('target', 'seq_len')
 
+
 if bundle.datasets.get('dev') is not None:
     if bundle.datasets.get('test') is not None:
         fitlog_callback = FitlogCallback(data={'test': bundle.datasets['test'],
                                                'train': bundle.datasets['train'][:2000]}, log_loss_every=100)
 else:
     fitlog_callback = FitlogCallback(data={'train': bundle.datasets['train'][:2000]}, log_loss_every=100)
-
 callbacks.append(fitlog_callback)
 
 from fastNLP import Callback
@@ -376,7 +374,7 @@ print('valid every {} steps'.format(valid_steps))
 trainer = Trainer(bundle.datasets['train'], model, optimizer, LossInForward(), args.batch_size, sampler,
                   n_epochs=args.epoch,
                   dev_data=bundle.datasets.get('dev') if 'dev' in bundle.datasets else bundle.datasets['test'],
-                  metrics=metrics, metric_key='f' if args.dataset not in english_pos_dataset else None,
+                  metrics=metrics, metric_key='f',
                   callbacks=callbacks, device=device, num_workers=2, dev_batch_size=64, use_tqdm=False, print_every=100,
                   validate_every=valid_steps)
 trainer.train()
